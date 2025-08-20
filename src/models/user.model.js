@@ -1,8 +1,9 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-const {Schema , Types} = mongoose;
-const bcrypt = require('bcrypt');
+require("dotenv").config();
+const mongoose = require("mongoose");
+const { Schema, Types } = mongoose;
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { customError } = require("../helpers/customErorr");
 const userSchema = new Schema({
   name: {
     type: String,
@@ -11,13 +12,11 @@ const userSchema = new Schema({
   email: {
     type: String,
     trim: true,
-    require: true,
     unique: [true, "email must unique"],
   },
   phone: {
     type: Number,
     trim: true,
-    require: true,
   },
   password: {
     type: String,
@@ -83,7 +82,7 @@ const userSchema = new Schema({
       ref: "parmission",
     },
   ],
-  pesetPasswordOtp: Number,
+  resetPasswordOtp: Number,
   resetPasswordExpirse: Date,
   twoFactorEnabled: Boolean,
   isBlocked: Boolean,
@@ -95,62 +94,63 @@ const userSchema = new Schema({
 });
 
 // make a has password with mongoose
-userSchema.pre("save", async function(next){
-    if(this.isModified("password")){
-        const hasPassword = await bcrypt.hash(this.password, 10)
-        this.password = hasPassword
-    }
-    next()
-})
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password")) {
+    const hasPassword = await bcrypt.hash(this.password, 10);
+    this.password = hasPassword;
+  }
+  next();
+});
 
 // check user email or phone already exit or not
-userSchema.pre("save", async function(){
-   const isExist = this.constructor.findOne({
-      $or:[{email: this.email}, {phone: this.phone}]
-   })
-   if(isExist && isExist._id.toString() !== this._id.toString()){
-      throw new Error('email already exist')
-   }
-   next()
-})
+userSchema.pre("save", async function (next) {
+  const isExist = await this.constructor.findOne({
+    $or: [{ email: this.email }, { phone: this.phone }],
+  });
+
+  if (isExist && isExist._id !== this._id && isExist._id == this._id) {
+    throw new customError(401, "email already exist");
+  }
+  next();
+});
 
 //compare password method
-userSchema.method.comparePassword = async function(humanPass){
-  return  await bcrypt.compare(humanPass, this.password)
-}
+userSchema.methods.comparePassword = async function (humanPass) {
+  return await bcrypt.compare(humanPass, this.password);
+};
 
 // token generat
-userSchema.method.generateTokenAccess = async function(){
-return await jwt.sign(
-  {
-    id: this._id,
-    phone: this.phone,
-    email: this.email,
-    role: this.role,
-  },
-  process.env.ACCESSTOKEN_SECRET,
-  { expiresIn: process.env.ACCESSTOKEN_EXPIRE }
-);
-}
+userSchema.methods.generateTokenAccess = async function () {
+  return await jwt.sign(
+    {
+      id: this._id,
+      phone: this.phone,
+      email: this.email,
+      role: this.role,
+    },
+    process.env.ACCESSTOKEN_SECRET,
+    { expiresIn: process.env.ACCESSTOKEN_EXPIRE }
+  );
+};
 
 // refrence token
-userSchema.method.refrenceToken = async function(){
- return await jwt.sign(
-     {
-       id: this._id,
-     },
-     process.env.REFRENCHTOKEN_SECRET,
-     { expiresIn: process.env.REFRENCHTOKEN_EXPIRE }
-   );
-}
+userSchema.methods.refrenceToken = async function () {
+  return await jwt.sign(
+    {
+      id: this._id,
+    },
+    process.env.REFRENCHTOKEN_SECRET,
+    { expiresIn: process.env.REFRENCHTOKEN_EXPIRE }
+  );
+};
 
 // varify access token
-userSchema.method.varifyTokenAccess = async function(token){
-   return await jwt.verify(token, process.env.ACCESSTOKEN_SECRET);
-}
+userSchema.methods.varifyTokenAccess = async function (token) {
+  return await jwt.verify(token, process.env.ACCESSTOKEN_SECRET);
+};
 
 // varify refresh token
-userSchema.method.varifyRefreshToken = async function(token){
-   return await jwt.verify(token,process.env.REFRENCHTOKEN_SECRET);
-}
-module.exports = mongoose.model('user', userSchema)
+userSchema.methods.varifyRefreshToken = async function (token) {
+  return await jwt.verify(token, process.env.REFRENCHTOKEN_SECRET);
+};
+module.exports = mongoose.model("user", userSchema);
