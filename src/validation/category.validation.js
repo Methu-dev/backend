@@ -23,16 +23,16 @@ exports.categoryValidateUser = async (req) => {
     if (image?.length > 1) {
       throw new customError(401, "Image must be sungle");
     }
-    if (image?.size > 20000) {
+    if (image?.size > 5 * 1024 *1024) {
       throw new customError(401, "image size upload below 2mb");
     }
-    if (allowFormat.includes(image?.mimetype)) {
+    if (!allowFormat.includes(image?.mimetype)) {
       throw new customError(
         401,
         "image format not accept try image/jpg, png, webp, jpeg"
       );
     }
-    return value; 
+    return {name: value.name, image: req?.files?.image[0]}; 
   } catch (error) {
     if (error.data == null) {
       throw new customError(401, error);

@@ -10,13 +10,16 @@ const categorySchema = new Schema(
       required: true,
       trim: true,
     },
-    image: {
-      type: String,
-      default: "",
-    },
+    image: {},
     slug: {
       type: String,
     },
+    subCategory: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "SubCategory",
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,
@@ -28,7 +31,7 @@ const categorySchema = new Schema(
 // make a slug using slugify
 categorySchema.pre("save", async function (next) {
   if (this.isModified("name")) {
-    this.slug = this.slug(this.name, {
+    this.slug = slugify(this.name, {
       replacement: "-",
       lower: false,
       strict: false,
@@ -47,6 +50,7 @@ categorySchema.pre("save", async function(next){
     if(isExist && !isExist._id.equals(this._id)){
         throw new customError(401, `${this.name} already exist try another one`)
     }
+    next()
 })
 
 
