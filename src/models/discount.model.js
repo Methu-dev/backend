@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
-const { customError } = require("../helpers/customError");
+const { customError } = require("../helpers/customErorr");
 
 const discountSchema = new mongoose.Schema(
   {
@@ -23,7 +23,7 @@ const discountSchema = new mongoose.Schema(
     },
     discountType: {
       type: String,
-      enum: ["tk", "percentance"], 
+      enum: ["tk", "percentance"],
       required: [true, "Discount type is required"],
     },
     discountValueByAmount: {
@@ -39,7 +39,7 @@ const discountSchema = new mongoose.Schema(
     },
     discountPlan: {
       type: String,
-      enum: ["category", "subCategory", "product"],
+      enum: ["category", "subCategory", "product", "flat"],
       required: [true, "Discount plan is required"],
     },
     category: {
