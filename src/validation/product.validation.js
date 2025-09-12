@@ -4,7 +4,7 @@ const { customError } = require("../helpers/customErorr");
 // product validation schema
 const productValidationSchema = Joi.object(
   {
-    name: Joi.string().trim().min(3).max(100).required().messages({
+    name: Joi.string().trim().min(3).max(100).messages({
       "string.base": "Product name must be a string",
       "string.empty": "Product name is required",
       "any.required": "Product name is required",
@@ -12,7 +12,7 @@ const productValidationSchema = Joi.object(
       "string.max": "Product name must not exceed 100 characters",
     }),
 
-    category: Joi.string().required().messages({
+    category: Joi.string().messages({
       "string.base": "Category ID must be a string",
       "string.empty": "Category is required",
       "any.required": "Category is required",
@@ -24,13 +24,13 @@ const productValidationSchema = Joi.object(
       "any.required": "SKU is required",
     }), 
 
-    purchasePrice: Joi.number().min(100).required().messages({
+    purchasePrice: Joi.number().min(100).messages({
       "number.base": "Purchase price must be a number",
       "number.min": "Purchase price must be at least 100",
       "any.required": "Purchase price is required",
     }),
 
-    retailPrice: Joi.number().required().messages({
+    retailPrice: Joi.number().messages({
       "number.base": "Retail price must be a number",
       "any.required": "Retail price is required",
     }),
