@@ -39,9 +39,22 @@ exports.creatProduct = asyncHandler(async(req, res)=>{
 
 //get all product
 exports.getAllProduct = asyncHandler(async(req, res)=>{
+  const {sort_by} = req.query;
+  let sortQuery = {};
+  if(sort_by == "created-descending"){
+    sortQuery = { createdAt: -1 };
+  }
+  else if (sort_by == "created-ascending") {
+    sortQuery = { createdAt: 1 };
+  }
+  else if (sort_by == "title-ascending") {
+    sortQuery = { name: 1 };
+  }else{
+   sortQuery = { name: -1 }; 
+  }
   const product = await productModel
     .find()
-    .sort({ createdAt: -1 })
+    .sort(sortQuery || { createdAt: -1 })
     .populate({
       path: "category",
       select: "-category -subCategory -updatedAt -__v",
@@ -84,13 +97,79 @@ exports.updateProductImage = asyncHandler(async (req, res) => {
   const product = await productModel.findOne({ slug });
   if (!product) throw new customError(404, "product not found");
 
-  for(const image of req.body.imageid){
-    await deleteCloudinaryImage(image.publicId);
+  for(const imageId of req.body.image){
+    await deleteCloudinaryImage(imageId);
+    product.image = product.image.filter((img) => img.publicId !== imageId);
   }
 
   for(const image of req.files.image){
     const imageInfo = await uploadCloudinaryFile(image.path)
     product.image.push(imageInfo);
   }
+  await product.save()
   apiRespons.sendSuccess(res, 200, "product feched successfully", product);
 });
+
+// search get product by category id and sub category id brnad id
+exports.getProducts = asyncHandler(async(req, res)=>{
+  const { category, subCategory, brand, tag } = req.query;
+  let query;
+  if(category){
+    query = {...query,category: category}
+  }
+  if(subCategory){
+    query = {...query,subCategory: subCategory}
+  }
+  if(tag){
+    if(Array.isArray(tag)){
+      query = {...query, tag: {$in: tag}}
+    }else{
+      query = {...query, tag: tag}
+    }
+  }
+  if(brand){
+    if(Array.isArray(brand)){
+      query = {...query, brand: {$in: brand}}
+
+    }else{
+      query = { ...query, brand: brand };
+    }
+  }
+  
+  const products = await productModel.find(query);
+  if(!products) throw new customError(401, "products not found");
+  apiRespons.sendSuccess(res, 200, "products fetched successfully done", products)
+})
+
+// get product filter by price
+exports.priceFilterProducts = asyncHandler(async(req, res)=>{
+  const {minPrice, maxPrice} = req.query;
+  if(!minPrice || !maxPrice) throw new customError(400, "min and maxprice are requred");
+    const products = await productModel.find({
+      $and: [{retailPrice: {$gte: minPrice, $lte: maxPrice}}]
+    })
+    if(!products) throw new customError(404, "product not found");
+    apiRespons.sendSuccess(res, 200, "products fecthed successfully", products)
+  
+})
+
+//product pagination
+exports.productPagination = asyncHandler(async(req, res)=>{
+  const {page, item} = req.query;
+  let skipAmount = (page -1) * item;
+  const totalItems = await productModel.countDocuments();
+  const totalPage = Math.ceil(totalItems / item)
+  const products = await productModel
+    .find()
+    .skip(skipAmount)
+    .limit(item)
+    .populate({
+      path: "category",
+      select: "-category -subCategory -updatedAt -__v",
+    })
+    .populate({ path: "subCategory" })
+    .populate({ path: "brand" });
+  if(!products) throw new customError(401, "Product not found");
+  apiRespons.sendSuccess(res, 200, "get all product successfully",{products, totalItems, totalPage})
+
+})
