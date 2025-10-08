@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 const { customError } = require("../helpers/customErorr");
+const { required } = require("joi");
 
 // revies scheam
 const reviewSchema = new mongoose.Schema(
@@ -18,9 +19,11 @@ const reviewSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
-    image: {
-      type: String,
-      default: null,
+    image: [{}],
+    productId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Product",
+      required: true,
     },
   },
   { timestamps: true }
