@@ -11,62 +11,39 @@ const cartValidationSchema = Joi.object(
         "string.pattern.base": "Invalid user ObjectId format",
       }),
 
-    guestid: Joi.string().trim().optional().messages({
+    guestid: Joi.string().trim().optional().allow(null, "").messages({
       "string.base": "Guest ID must be a string",
     }),
 
-    items: Joi.array()
-      .items(
-        Joi.object({
-          product: Joi.string()
-            .required()
-            .allow(null, "")
-            .pattern(/^[0-9a-fA-F]{24}$/)
-            .messages({
-              "string.pattern.base": "Invalid product ObjectId format",
-              "any.required": "Product ID is required",
-            }),
-
-          variant: Joi.string()
-            .optional()
-            .allow(null, "")
-            .pattern(/^[0-9a-fA-F]{24}$/)
-            .messages({
-              "string.pattern.base": "Invalid variant ObjectId format",
-            }),
-
-          quantity: Joi.number().integer().min(1).required().messages({
-            "number.base": "Quantity must be a number",
-            "number.min": "Quantity must be at least 1",
-            "any.required": "Quantity is required",
-          }),
-
-          size: Joi.string().required().messages({
-            "string.base": "Size must be a string",
-            "string.empty": "Size is required",
-            "any.required": "Size is required",
-          }),
-
-          color: Joi.string().required().messages({
-            "string.base": "Color must be a string",
-            "string.empty": "Color is required",
-            "any.required": "Color is required",
-          }),
-        })
-      )
+    product: Joi.string()
+      .pattern(/^[0-9a-fA-F]{24}$/)
       .required()
       .messages({
-        "array.base": "Items must be an array",
-        "array.min": "At least one item is required",
-        "any.required": "Items field is required",
+        "string.empty": "Product ID is required",
+        "string.pattern.base": "Invalid Product ObjectId format",
       }),
 
-    coupon: Joi.string()
-      .optional()
-      .messages({
-        "string.pattern.base": "Invalid coupon ObjectId format",
-      }),
+    variant: Joi.string().allow(null, "").optional().messages({
+      "string.base": "Variant must be a string",
+    }),
 
+    quantity: Joi.number().min(1).required().messages({
+      "number.base": "Quantity must be a number",
+      "number.min": "Quantity must be at least 1",
+      "any.required": "Quantity is required",
+    }),
+
+    size: Joi.string().allow(null, "").optional().messages({
+      "string.base": "Size must be a string",
+    }),
+
+    color: Joi.string().allow(null, "").optional().messages({
+      "string.base": "Color must be a string",
+    }),
+
+    coupon: Joi.string().allow(null, "").optional().messages({
+      "string.base": "Coupon must be a string",
+    }),
   },
   { abortEarly: true }
 ).unknown(true);
@@ -79,7 +56,11 @@ exports.validateCart = async (req) => {
     return {
       user: value.user || null,
       guestid: value.guestid || null,
-      items: value.items,
+      product: value.product,
+      variant: value.variant || null,
+      quantity: value.quantity,
+      size: value.size || null,
+      color: value.color || null,
       coupon: value.coupon || null,
       totalPrice: value.totalPrice || 0,
       discountPrice: value.discountPrice || 0,

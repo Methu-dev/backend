@@ -18,9 +18,9 @@ const cartSchema = new mongoose.Schema(
           required: [true, "Product ID is required"],
         },
         variant: {
-            type: mongoose.Types.ObjectId,
-            ref: "Variant",
-            default: null,
+          type: mongoose.Types.ObjectId,
+          ref: "Variant",
+          default: null,
         },
         quantity: {
           type: Number,
@@ -32,7 +32,7 @@ const cartSchema = new mongoose.Schema(
           required: [true, "Product price is required"],
           min: [0, "Price cannot be negative"],
         },
-        total: {
+        totalPrice: {
           type: Number,
           default: 0,
           min: [0, "Total cannot be negative"],
@@ -56,6 +56,7 @@ const cartSchema = new mongoose.Schema(
       default: 0,
       min: [0, "Total price cannot be negative"],
     },
+    totalQuantity: { type: Number, default: 0 },
     discountPrice: {
       type: Number,
       default: 0,
