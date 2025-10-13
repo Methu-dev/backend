@@ -15,7 +15,7 @@ const cartSchema = new mongoose.Schema(
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
-          required: [true, "Product ID is required"],
+          default: null,
         },
         variant: {
           type: mongoose.Types.ObjectId,
@@ -50,22 +50,24 @@ const cartSchema = new mongoose.Schema(
     coupon: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Coupon",
+      default: null,
     },
-    totalPrice: {
+    grossTotalAmount: {
       type: Number,
       default: 0,
-      min: [0, "Total price cannot be negative"],
+    },
+    finalAmount: {
+      type: Number,
+      default: 0,
     },
     totalQuantity: { type: Number, default: 0 },
-    discountPrice: {
-      type: Number,
-      default: 0,
-      min: [0, "Discount price cannot be negative"],
+    discountType: {
+      type: String,
+      default: "N/A",
     },
-    afterApplyCouponPrice: {
+    discountAmount: {
       type: Number,
       default: 0,
-      min: [0, "Final price cannot be negative"],
     },
   },
   { timestamps: true }

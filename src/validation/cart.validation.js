@@ -17,7 +17,8 @@ const cartValidationSchema = Joi.object(
 
     product: Joi.string()
       .pattern(/^[0-9a-fA-F]{24}$/)
-      .required()
+      .allow(null, "")
+      .optional()
       .messages({
         "string.empty": "Product ID is required",
         "string.pattern.base": "Invalid Product ObjectId format",
